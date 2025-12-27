@@ -1,19 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f4f4f4; padding: 10px; }
+        .card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .row { display: flex; justify-content: space-around; margin: 10px 0; }
+        .btn { padding: 10px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; width: 30%; }
+        .btn.active { background: #4caf50; color: white; border-color: #4caf50; }
+        .mode-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; align-items: center; padding: 5px 0; border-bottom: 1px solid #eee; }
+        input { width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
+        #save-btn { background: #2196f3; color: white; border: none; width: 100%; padding: 15px; font-size: 18px; border-radius: 8px; margin-top: 10px; }
+    </style>
 </head>
-<body style="text-align: center; padding: 20px;">
-    <input type="number" id="temp" placeholder="Температура" style="width: 80%; padding: 10px;">
-    <br><br>
-    <button onclick="send()" style="padding: 10px 20px;">ОК</button>
+<body>
+    <div class="card">
+        <h3>ОБЩИЕ</h3>
+        <div class="row">
+            <div id="on" class="btn" onclick="toggle(this)">ON</div>
+            <div id="tem" class="btn" onclick="toggle(this)">TEMP</div>
+            <div id="eco" class="btn" onclick="toggle(this)">ECO</div>
+        </div>
+    </div>
+
+    <div class="card" id="modes-list">
+        <h3>РЕЖИМЫ (Время | Мин | °C)</h3>
+        <!-- Генерация 4-х строк -->
+    </div>
+
+    <button id="save-btn" onclick="save()">СОХРАНИТЬ</button>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть окно
-        function send() {
-            let val = document.getElementById("temp").value;
-            tg.sendData(val); // Отправить строку боту
+        tg.expand();
+
+        function toggle(el) { el.classList.toggle('active'); }
+
+        // Генерируем поля для 4-х режимов
+        let html = '';
+        for(let i=0; i<4; i++) {
+            html += `<div class="mode-row">
+                <input type="time" id="t${i}" value="00:00">
+                <input type="number" id="d${i}" placeholder="Мин">
+                <input type="number" id="s${i}" step="0.1" placeholder="°C">
+            </div>`;
+        }
+        document.getElementById('modes-list').innerHTML += html;
+
+        function save() {
+            let data = {
+                on: document.getElementById('on').classList.contains('active') ? 1 : 0,
+                tem: document.getElementById('tem').classList.contains('active') ? 1 : 0,
+                eco: document.getElementById('eco').classList.contains('active') ? 1 : 0,
+                m: []
+            };
+            for(let i=0; i<4; i++) {
+                let t = document.getElementById(`t${i}`).value.split(':');
+                data.m.push([
+                    parseInt(t[0])*60 + parseInt(t[1]), // Время в минутах
+                    parseInt(document.getElementById(`d${i}`).value) || 0, // Длительность
+                    Math.round(parseFloat(document.getElementById(`s${i}`).value) * 10) || 0 // Температура * 10
+                ]);
+            }
+            tg.sendData(JSON.stringify(data)); // Отправляем JSON строку
         }
     </script>
 </body>
