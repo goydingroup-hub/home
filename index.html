@@ -20,6 +20,7 @@
         <h3>ОБЩИЕ</h3>
         <div class="row">
             <div id="on" class="btn" onclick="toggle(this)">ON</div>
+            <div id="hea" class="btn" onclick="toggle(this)">HEAT</div>
             <div id="tem" class="btn" onclick="toggle(this)">TEMP</div>
             <div id="eco" class="btn" onclick="toggle(this)">ECO</div>
         </div>
@@ -52,6 +53,7 @@
         function save() {
             let data = {
                 on: document.getElementById('on').classList.contains('active') ? 1 : 0,
+                hea: document.getElementById('hea').classList.contains('active') ? 1 : 0,
                 tem: document.getElementById('tem').classList.contains('active') ? 1 : 0,
                 eco: document.getElementById('eco').classList.contains('active') ? 1 : 0,
                 m: []
